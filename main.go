@@ -93,7 +93,27 @@ func main() {
 		if err != nil {
 			log.Fatal("Unexpected error capturing test source. ", err)
 		}
-	} else {
+	}  else if *video == "/dev/video0" {
+		// don't think i am doing it right?
+		codecSelector := mediadevices.NewCodecSelector(
+			videoCodecSelector,
+			mediadevices.WithAudioEncoders(&opusParams),
+		)
+		codecSelector.Populate(&mediaEngine)
+
+		stream, err = mediadevices.GetUserMedia(mediadevices.MediaStreamConstraints{
+			Video: func(constraint *mediadevices.MediaTrackConstraints) {
+				constraint.DeviceID = prop.String("/dev/video0")
+				constraint.Width = prop.Int(640)
+				constraint.Height = prop.Int(480)
+			},
+			Audio: func(constraint *mediadevices.MediaTrackConstraints) {},
+			Codec: codecSelector,
+		})
+		if err != nil {
+			log.Fatal("Unexpected error capturing webcam ", err)
+		}
+	}else {
 		codecSelector := NewCodecSelector(
 			WithVideoEncoders(&vpxParams),
 			WithAudioEncoders(&opusParams),
